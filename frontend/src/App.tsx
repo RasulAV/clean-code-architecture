@@ -1,27 +1,37 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-type Book = {
-  id: string;
-  title: string;
+import { BrowserRouter as Router } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+
+import Routes from "./routes";
+import ComponentFactory from "./presentation/component-factory";
+// import PagesLayout from "./presentation/PagesLayout";
+import ErrorBoundary from "./presentation/ErrorBoundaries";
+import { TodoService } from "./services/todo";
+import { GraphQLTransport } from "./transport/graphql/transport";
+
+const graphQLTransport = new GraphQLTransport(() =>
+  localStorage.getItem("token")
+);
+
+const services = {
+  todo: new TodoService(graphQLTransport),
 };
+
+new ComponentFactory(services);
+
 function App() {
-  const [books, setBooks] = useState<Book[]>([]);
-  useEffect(() => {
-    const getBooks = async () => {
-      const response = await fetch("http://localhost:4000/books");
-      const data = await response.json();
-      setBooks(data);
-    };
-    getBooks();
-  }, []);
   return (
-    <>
-      <ul>
-        {books.map((book) => (
-          <li key={book.id}>{book.title}</li>
-        ))}
-      </ul>
-    </>
+    <Router>
+      <ErrorBoundary>
+        {/* <PagesLayout
+          header={componentFactory.createHeader()}
+          footer={componentFactory.createFooter()}
+        > */}
+        <Routes />
+        {/* </PagesLayout> */}
+        <ToastContainer position="top-right" autoClose={5000} />
+      </ErrorBoundary>
+    </Router>
   );
 }
+
 export default App;
